@@ -18,8 +18,10 @@ import org.apache.catalina.loader.WebappLoader;
 
 public final class Bootstrap1 {
   public static void main(String[] args) {
-    //invoke: http://localhost:8080/app1/Primitive or http://localhost:8080/app1/Modern
+    //invoke: http://localhost:8080/a/b/e/Primitive or http://localhost:8080/a/b/Modern
     System.setProperty("catalina.base", System.getProperty("user.dir"));
+    // catalina.base被设为了当前工程根目录（程序从根目录执行的）
+    System.out.println("catalina.base is set to: " + System.getProperty("user.dir"));
     Connector connector = new HttpConnector();
 
     Wrapper wrapper1 = new StandardWrapper();
@@ -31,7 +33,9 @@ public final class Bootstrap1 {
 
     Context context = new StandardContext();
     // StandardContext's start method adds a default mapper
-    context.setPath("/app1");
+    context.setPath("/a/b");
+    // 去webapps（下文host设置了app base）下的app1加载文件（包括servlet文件）
+    // 这个是加载文件的位置，跟uri没关系
     context.setDocBase("app1");
 
     context.addChild(wrapper1);
@@ -43,12 +47,14 @@ public final class Bootstrap1 {
     Host host = new StandardHost();
     host.addChild(context);
     host.setName("localhost");
+    // <catalina.base>/webapps作为寻找context的目录
     host.setAppBase("webapps");
 
     Loader loader = new WebappLoader();
     context.setLoader(loader);
     // context.addServletMapping(pattern, name);
-    context.addServletMapping("/Primitive", "Primitive");
+    // "/e/Primitive"是除去context path的uri，是servlet的映射路径
+    context.addServletMapping("/e/Primitive", "Primitive");
     context.addServletMapping("/Modern", "Modern");
 
     connector.setContainer(host);
